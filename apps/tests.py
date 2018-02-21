@@ -17,16 +17,16 @@ class AccountsTest(APITestCase):
         Ensure we can create a new user and a valid token is created with it.
         """
         data = {
-            "username": "foobar",
-            "email": "foobar@example.com",
-            "password": "somepassword"
+            "username": "ParamMittal",
+            "email": "farjiparam@gmail.com",
+            "password": "fgfhgdxhfggdstyfthgsdtygrf"
         }
 
         response = self.client.post(self.create_url , data, format='json')
 
         # We want to make sure we have two users in the database..
         self.assertEqual(User.objects.count(), 2)
-        # And that we're returning a 201 created code.
+        # And that we're retuzrning a 201 created code.
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # Additionally, we want to return the username and email upon successful creation.
         self.assertEqual(response.data['username'], data['username'])
