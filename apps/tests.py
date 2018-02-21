@@ -17,8 +17,8 @@ class AccountsTest(APITestCase):
         Ensure we can create a new user and a valid token is created with it.
         """
         data = {
-            "username": "ParamMittal",
-            "email": "farjiparam@gmail.com",
+            "username": "deepanshu",
+            "email": "deepanshuj1999@gmail.com",
             "password": "fgfhgdxhfggdstyfthgsdtygrf"
         }
 
