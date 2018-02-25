@@ -12,9 +12,10 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 from .tokens import account_activation_token
 from django.views.generic import ListView
-from django.contrib.auth.views import login
+from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect, reverse
 from django.http import Http404, HttpResponse
+# from rest_framework.permissions import IsAuthenticated
 
 
 class Signup(APIView):
@@ -77,7 +78,7 @@ class Activate(ListView):
         if user is not None and account_activation_token.check_token(user, self.kwargs['token']):
             user.is_active = True
             user.save()
-            login(request, user)
+            # login(request, user)
             return redirect('login')
         else:
             return HttpResponse("Invalid token")
@@ -85,13 +86,17 @@ class Activate(ListView):
 
 class Login(APIView):
     serializer_class = LoginSerializer
+    permission_classes =
 
     def post(self, *args, **kwargs):
         serializer = self.serializer_class(data=self.request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            print(user)
+            login(self.request, user)
+            print("-----",str(self.request.user))
+
             return Response(status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
-
 

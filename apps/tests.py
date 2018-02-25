@@ -93,3 +93,26 @@ class AccountsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
         self.assertEqual(len(response.data['username']), 1)
+
+
+class LoginTest(APITestCase):
+    def setUp(self):
+        # We want to go ahead and originally create a user.
+        self.test_user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
+
+        # URL for creating an account.
+        self.create_url = reverse('login')
+
+    def test_username(self):
+        data = {
+            'username': 'testuser',
+            'password': 'testpassword'
+        }
+        response = self.client.post(self.create_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(User.objects.count(), 1)
+        # self.assertEqual(len(response.data['username']), 1)
+
+
+
+
