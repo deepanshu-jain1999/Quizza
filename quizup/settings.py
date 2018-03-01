@@ -111,7 +111,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
@@ -128,3 +127,6 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'mp3converter2017@gmail.com'
 EMAIL_HOST_PASSWORD = 'mp3@123mp3'
 EMAIL_USE_TLS = True
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.serializers import SignupSerializer, LoginSerializer
+from apps.serializers import SignupSerializer, LoginSerializer, ProfileSerializer
 from django.contrib.auth.models import User
+from apps.models import Profile
 from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
 from quizup.settings import EMAIL_HOST_USER
@@ -16,6 +17,7 @@ from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect, reverse
 from django.http import Http404, HttpResponse
 # from rest_framework.permissions import IsAuthenticated
+from rest_framework import permissions, viewsets
 
 
 class Signup(APIView):
@@ -63,7 +65,6 @@ class Signup(APIView):
                          )
 
 
-
 class Activate(ListView):
 
     def get(self, request, *args, **kwargs):
@@ -86,17 +87,33 @@ class Activate(ListView):
 
 class Login(APIView):
     serializer_class = LoginSerializer
-    permission_classes =
 
     def post(self, *args, **kwargs):
         serializer = self.serializer_class(data=self.request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            print(user)
-            login(self.request, user)
-            print("-----",str(self.request.user))
+            print("-----", str(self.request.user))
 
-            return Response(status=status.HTTP_200_OK)
+            return Response({'token': user.auth_token.key}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    """
+       This viewset automatically provides `list`, `create`, `retrieve`,
+       `update` and `destroy` actions.
+       Additionally we also provide an extra `highlight` action.
+     """
+
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = ProfileSerializer
+    # parser_classes = (FormParser, MultiPartParser)
+
+    def get_queryset(self):
+        user = self.request.user
+        return Profile.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
