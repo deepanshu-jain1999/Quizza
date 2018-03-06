@@ -14,7 +14,7 @@ from django.utils.encoding import force_bytes, force_text
 from .tokens import account_activation_token
 from django.views.generic import ListView
 from django.contrib.auth import login, authenticate
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponse
 # from rest_framework.permissions import IsAuthenticated
 from rest_framework import permissions, viewsets
@@ -49,7 +49,7 @@ class Signup(APIView):
         msg_html = render_to_string('apps/email_template.html', {
             'user': username,
             'domain': current_site.domain,
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),# add .decode() in django2+
             'token': account_activation_token.make_token(user),
         })
         subject = 'Activate your account'
@@ -108,7 +108,6 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ProfileSerializer
-    # parser_classes = (FormParser, MultiPartParser)
 
     def get_queryset(self):
         user = self.request.user

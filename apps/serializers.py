@@ -19,7 +19,8 @@ class SignupSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(validated_data['username'],
                                         validated_data['email'],
                                         validated_data['password'],
-                                        is_active=False)
+                                        # is_active=False,
+                                        )
 
         return user
 
@@ -56,7 +57,7 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
-class ProfileSerializer(serializers.HyperlinkedModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
