@@ -26,7 +26,7 @@ class Signup(APIView):
     """
     serializer_class = SignupSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, format=None):
         serializer = self.serializer_class(data=self.request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -88,7 +88,7 @@ class Activate(ListView):
 class Login(APIView):
     serializer_class = LoginSerializer
 
-    def post(self, *args, **kwargs):
+    def post(self, format=None, **kwargs,):
         serializer = self.serializer_class(data=self.request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
@@ -115,4 +115,3 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
