@@ -21,7 +21,8 @@ class SignupSerializer(serializers.ModelSerializer):
                                         validated_data['password'],
                                         # is_active=False,
                                         )
-
+        user.is_active = False
+        user.save()
         return user
 
     class Meta:

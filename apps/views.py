@@ -17,7 +17,7 @@ from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponse
 # from rest_framework.permissions import IsAuthenticated
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, viewsets, mixins, generics
 
 
 class Signup(APIView):
@@ -80,7 +80,7 @@ class Activate(ListView):
             user.is_active = True
             user.save()
             # login(request, user)
-            return redirect('login')
+            return redirect('http://localhost:4200/welcome')
         else:
             return HttpResponse("Invalid token")
 
@@ -99,19 +99,51 @@ class Login(APIView):
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
-class ProfileViewSet(viewsets.ModelViewSet):
-    """
-       This viewset automatically provides `list`, `create`, `retrieve`,
-       `update` and `destroy` actions.
-       Additionally we also provide an extra `highlight` action.
-     """
+# class ProfileViewSet(viewsets.ModelViewSet):
+#     """
+#        This viewset automatically provides `list`, `create`, `retrieve`,
+#        `update` and `destroy` actions.
+#        Additionally we also provide an extra `highlight` action.
+#      """
+#
+#     permission_classes = (permissions.IsAuthenticated,)
+#     serializer_class = ProfileSerializer
+#
+#     def get_queryset(self):
+#         user = self.request.user
+#         return Profile.objects.filter(user=user)
+#
+#     def perform_create(self, serializer):
+#         serializer.save(user=self.request.user)
 
-    permission_classes = (permissions.IsAuthenticated,)
+
+class ProfileList(mixins.ListModelMixin,
+                  mixins.CreateModelMixin,
+                  generics.GenericAPIView):
+    queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
 
-    def get_queryset(self):
-        user = self.request.user
-        return Profile.objects.filter(user=user)
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class ProfileDetail(mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.DestroyModelMixin,
+                    generics.GenericAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
