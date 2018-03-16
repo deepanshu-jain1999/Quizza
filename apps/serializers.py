@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
-from apps.models import Profile
+from apps.models import Profile, Category
 
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -65,4 +65,36 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = ['name', 'city', 'profile_pic', 'user']
 
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(min_length=8)
+    new_password = serializers.CharField(min_length=8)
+    new_confirm_password = serializers.CharField(min_length=8)
+
+    class Meta:
+
+        def validate(self, attrs):
+            old_password = attrs.get('old_password')
+            new_password = attrs.get('new_password')
+            new_confirm_password = attrs.get('new_confirm_password')
+
+            if new_password != new_confirm_password:
+                message = "Enter the same password"
+                raise serializers.ValidationError(message)
+
+
+class ForgetPasswordSerializer(serializers.Serializer):
+    email = serializers.CharField(min_length=8)
+
+
+class SetPasswordSerializer(serializers.Serializer):
+    new_password = serializers.CharField(min_length=8)
+    new_confirm_password = serializers.CharField(min_length=8)
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ['category']
 

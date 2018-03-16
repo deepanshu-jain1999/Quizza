@@ -1,9 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from apps.serializers import SignupSerializer, LoginSerializer, ProfileSerializer
+from apps.serializers import SignupSerializer,\
+                            LoginSerializer,\
+                            ProfileSerializer,\
+                            ChangePasswordSerializer,\
+                            ForgetPasswordSerializer,\
+                            SetPasswordSerializer, CategorySerializer
 from django.contrib.auth.models import User
-from apps.models import Profile
+from apps.models import Profile, Category, Quiz
 from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
 from quizup.settings import EMAIL_HOST_USER
@@ -13,11 +18,13 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 from .tokens import account_activation_token
 from django.views.generic import ListView
-from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
 from django.http import Http404, HttpResponse
-# from rest_framework.permissions import IsAuthenticated
-from rest_framework import permissions, viewsets, mixins, generics
+from rest_framework import permissions, generics
+from rest_framework.authentication import TokenAuthentication
+from django.contrib.auth import authenticate
+from django.core import serializers
+import json
 
 
 class Signup(APIView):
@@ -37,32 +44,34 @@ class Signup(APIView):
                 username = json["username"]
                 email = json["email"]
                 current_site = get_current_site(request)
-
-                self.email_send(self, user, username, email, current_site)
+                text = "Please Activate Your Account By clicking below :"
+                button = "Activate"
+                email_send(user, username, email, current_site, button, text)
                 return Response(json, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def email_send(self,request, user, username, email, current_site):
-        # current_site = get_current_site(request)
-        message = 'hello how are you'
-        msg_html = render_to_string('apps/email_template.html', {
-            'user': username,
-            'domain': current_site.domain,
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)),# add .decode() in django2+
-            'token': account_activation_token.make_token(user),
-        })
-        subject = 'Activate your account'
-        from_mail = EMAIL_HOST_USER
-        to_mail = [email]
 
-        return send_mail(subject,
-                         message,
-                         from_mail,
-                         to_mail,
-                         html_message=msg_html,
-                         fail_silently=False
-                         )
+def email_send(user, username, email, current_site, button, text):
+    message = 'hello how are you'
+    msg_html = render_to_string('apps/email_template.html', {
+        'user': username,
+        'domain': current_site.domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),        # add .decode() in django2+
+        'token': account_activation_token.make_token(user),
+        'button': button,
+        'text': text,
+    })
+    subject = 'Activate your account'
+    from_mail = EMAIL_HOST_USER
+    to_mail = [email]
+    return send_mail(subject,
+                     message,
+                     from_mail,
+                     to_mail,
+                     html_message=msg_html,
+                     fail_silently=False
+                     )
 
 
 class Activate(ListView):
@@ -117,33 +126,121 @@ class Login(APIView):
 #         serializer.save(user=self.request.user)
 
 
-class ProfileList(mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  generics.GenericAPIView):
-    queryset = Profile.objects.all()
+class ProfileList(generics.ListCreateAPIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ProfileSerializer
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+    def get_queryset(self):
+        user = self.request.user
+        return Profile.objects.filter(user=user)
 
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
-class ProfileDetail(mixins.RetrieveModelMixin,
-                    mixins.UpdateModelMixin,
-                    mixins.DestroyModelMixin,
-                    generics.GenericAPIView):
-    queryset = Profile.objects.all()
+class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
     serializer_class = ProfileSerializer
 
+    def get_queryset(self):
+        user = self.request.user
+        return Profile.objects.filter(user=user)
+
+
+class ChangePassword(APIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def post(self, format=None, **kwargs, ):
+        serializer = self.serializer_class(data=self.request.data)
+        if serializer.is_valid():
+            old_password = serializer.validated_data['old_password']
+            new_password = serializer.validated_data['new_password']
+            user = authenticate(username=self.request.user.username, password=old_password)
+            if user:
+                user = self.request.user
+                user.set_password(new_password)
+                user.save()
+                return Response({'token': user.auth_token.key}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class ForgetPassword(APIView):
+    serializer_class = ForgetPasswordSerializer
+
+    def post(self, format=None, **kwargs,):
+        serializer = self.serializer_class(data=self.request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            user = User.objects.get(email=email)
+            if user:
+                current_site = get_current_site(self.request)
+                text = " Change your account password on click below:"
+                button = "Change here"
+                email_send(user, user.username, email, current_site, button, text)
+                return Response(status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangeForgetPassword(ListView):
+
     def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
+        try:
+            x = self.kwargs['uidb64']
+            # decode the uid from 64 base to normal text
+            uid = force_text(urlsafe_base64_decode(x))
+            # fetch user information
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if user is not None and account_activation_token.check_token(user, self.kwargs['token']):
 
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+            # login(request, user)
+            return redirect('http://localhost:4200/forget_password')
+        else:
+            return HttpResponse("Invalid token")
 
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
+
+class SetPassword(APIView):
+    serializer_class = SetPasswordSerializer
+
+    def post(self, **kwargs):
+        serializer = self.serializer_class(data=self.request.data)
+        if serializer.is_valid():
+            new_password = serializer.validated_data['new_password']
+            pass
+
+
+class CategoryList(APIView):
+    # permission_classes = (permissions.IsAuthenticated,)
+    # authentication_classes = (TokenAuthentication,)
+    # serializer_class = CategorySerializer
+
+    def get(self, format=None):
+        # print(self.request.data)
+        cat = [cat.for_json() for cat in Category.objects.all()]
+        print(json.dumps(cat))
+        return Response(json.dumps(cat), status=status.HTTP_200_OK)
+
+
+
+class PlayQuiz(APIView):
+    # permission_classes = (permissions.IsAuthenticated,)
+    # authentication_classes = (TokenAuthentication,)
+    # serializer_class = CategorySerializer
+
+    def get(self, *args, **kwargs):
+        category = self.kwargs["category"]
+        level = self.kwargs["level"]
+        cat = Category.objects.filter(category=category)
+        quiz = Quiz.objects.filter(category=cat, level=level)
+        quiz = [c.for_json() for c in quiz]
+        print(quiz)
+        return Response(json.dumps(quiz), status=status.HTTP_200_OK)
 
 

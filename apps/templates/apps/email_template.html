@@ -18,13 +18,18 @@
             </div>
             <div style="background-color:rgba(255, 255, 255,0.9);padding-top: 5px;padding-bottom: 20px;">
                 <div>
-                    <h3 style="text-align: center;font-family: 'Lato', sans-serif;margin: 0px;padding: 5px 10px;font-size: 1rem;color: #0040a8;">Please Activate Your Account By clicking below :</h3>
+                    <h3 style="text-align: center;font-family: 'Lato', sans-serif;margin: 0px;padding: 5px 10px;font-size: 1rem;color: #0040a8;">{{ text }}</h3>
                 </div>
             </div>
             <div style="padding: 15px;">
                 <div style="text-align: center;">
+                    {% if button == "Activate" %}
                     <a style="border-radius:5px;color: black;
-    border: 2px solid #e7e7e7;padding:0px 5px 0px 5px;text-decoration: none;font-family: 'Acme', sans-serif;color:#ffffff;font-size: 1.6rem;" href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}">Activate</a>
+    border: 2px solid #e7e7e7;padding:0px 5px 0px 5px;text-decoration: none;font-family: 'Acme', sans-serif;color:#ffffff;font-size: 1.6rem;" href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}">{{ button }}</a>
+                    {% else %}
+                        <a style="border-radius:5px;color: black;
+    border: 2px solid #e7e7e7;padding:0px 5px 0px 5px;text-decoration: none;font-family: 'Acme', sans-serif;color:#ffffff;font-size: 1.6rem;" href="http://{{ domain }}{% url 'change_forget_password' uidb64=uid token=token %}">{{ button }}</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
