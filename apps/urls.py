@@ -24,7 +24,7 @@ urlpatterns = format_suffix_patterns([
     url(r'^set_password/$', views.SetPassword.as_view(), name='set_password'),
     url(r'^forget_password/$', views.ForgetPassword.as_view(), name='forget_password'),
     url(r'^home/category/$', views.CategoryList.as_view(), name='category_list'),
-    url(r'^home/category/(?P<category>\w+)/practice/(?P<level>\w+)$', views.PlayQuiz.as_view(), name='play_game'),
+    url(r'^home/category/(?P<category>\w+)/practice/(?P<level>\w+)/$', views.PlayQuiz.as_view(), name='play_game'),
     # url(r'^home/category/(?P<category>\w+)/compete/$', views.PlayQuizCompete.as_view(), name='play_game'),
 ])
 

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import os, uuid
+from django.core.files.images import get_image_dimensions
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -23,7 +24,7 @@ def get_image_name(self, imagename):  # to give unique id to images uploaded
 
 class Category(models.Model):
     category = models.CharField(max_length=200)
-    cat_img = models.ImageField(upload_to=get_image_name, default='category_image/default.png')
+    cat_img = models.ImageField(upload_to=get_image_name, default='category_image/default.png', help_text="Aspect ratio must be near 3;2")
 
     def __str__(self):
         return self.category
@@ -31,8 +32,12 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         cat = self.category
         cat_dict = [cat.category for cat in Category.objects.all()]
+        width, height = get_image_dimensions(self.cat_img.file)
+        ratio = width/height
         if cat in cat_dict:
             raise ValidationError("Category already exist")
+        if ratio>=1.6 or ratio <=1.4:
+            raise ValidationError("Image aspect ratio must be near 3:2")
         super().save(*args, **kwargs)
 
     def for_json(self):
@@ -98,4 +103,5 @@ class CompeteQuiz(models.Model):
             option4=self.option4,
             answer=self.answer
         )
+
 

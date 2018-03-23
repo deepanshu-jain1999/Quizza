@@ -225,7 +225,7 @@ class CategoryList(APIView):
         # print(self.request.data)
         cat = [cat.for_json() for cat in Category.objects.all()]
         print(json.dumps(cat))
-        return Response(json.dumps(cat), status=status.HTTP_200_OK)
+        return Response(cat, status=status.HTTP_200_OK)
 
 
 
@@ -241,6 +241,6 @@ class PlayQuiz(APIView):
         quiz = Quiz.objects.filter(category=cat, level=level)
         quiz = [c.for_json() for c in quiz]
         print(quiz)
-        return Response(json.dumps(quiz), status=status.HTTP_200_OK)
+        return Response(quiz, status=status.HTTP_200_OK)
 
 
