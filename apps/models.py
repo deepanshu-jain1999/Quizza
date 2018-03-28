@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-import os, uuid
+import os
+import uuid
 from django.core.files.images import get_image_dimensions
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -22,22 +24,62 @@ def get_image_name(self, imagename):  # to give unique id to images uploaded
     return os.path.join('category_image/', imagename)
 
 
+class EasyInstruction(models.Model):
+    instr = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return "EasyInstruction :- " + str(self.id)
+
+
+class MediumInstruction(models.Model):
+    instr = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return "MediumInstruction :- " + str(self.id)
+
+
+class HardInstruction(models.Model):
+    instr = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return "HardInstruction :- " + str(self.id)
+
+
 class Category(models.Model):
     category = models.CharField(max_length=200)
     cat_img = models.ImageField(upload_to=get_image_name, default='category_image/default.png', help_text="Aspect ratio must be near 3;2")
+    time_per_ques_easy = models.IntegerField(default=20)
+    time_per_ques_medium = models.IntegerField(default=40)
+    time_per_ques_hard = models.IntegerField(default=60)
+    easy_instr = models.ManyToManyField(EasyInstruction)
+    medium_instr = models.ManyToManyField(MediumInstruction)
+    hard_instr = models.ManyToManyField(HardInstruction)
 
     def __str__(self):
         return self.category
 
-    def save(self, *args, **kwargs):
-        cat = self.category
-        cat_dict = [cat.category for cat in Category.objects.all()]
+    def validate(self):
+        cat_name = self.category.lower()
+        print(cat_name)
+        if Category.objects.filter(category=cat_name).exclude(id=self.id).exists():
+            raise ValidationError("Category name should be unique")
+
         width, height = get_image_dimensions(self.cat_img.file)
         ratio = width/height
-        if cat in cat_dict:
-            raise ValidationError("Category already exist")
-        if ratio>=1.6 or ratio <=1.4:
+        if ratio >= 1.6 or ratio <= 1.4:
             raise ValidationError("Image aspect ratio must be near 3:2")
+
+    def save(self, *args, **kwargs):
+        self.validate()
+        # cat = self.category
+        # cat_dict = [cat.category for cat in Category.objects.all()]
+        # width, height = get_image_dimensions(self.cat_img.file)
+        # ratio = width/height
+        # if cat in cat_dict:
+        #     raise ValidationError("Category already exist")
+        # if ratio>=1.6 or ratio <=1.4:
+        #     raise ValidationError("Image aspect ratio must be near 3:2")
+        self.category = self.category.lower()
         super().save(*args, **kwargs)
 
     def for_json(self):
@@ -71,7 +113,6 @@ class Quiz(models.Model):
 
     def for_json(self):
         return dict(
-            id=self.id,
             question=self.question,
             option1=self.option1,
             option2=self.option2,
@@ -103,5 +144,6 @@ class CompeteQuiz(models.Model):
             option4=self.option4,
             answer=self.answer
         )
+
 
 

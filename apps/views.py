@@ -228,6 +228,31 @@ class CategoryList(APIView):
         return Response(cat, status=status.HTTP_200_OK)
 
 
+class Instruction(APIView):
+    # permission_classes = (permissions.IsAuthenticated,)
+    # authentication_classes = (TokenAuthentication,)
+
+    def get(self, *args, **kwargs):
+        category = self.kwargs["category"]
+        level = self.kwargs["level"]
+        cat = Category.objects.get(category=category)
+        count = Quiz.objects.filter(category=cat, level=level).count()
+        inst = []
+        time = 20
+        if level == "easy":
+            time = cat.time_per_ques_easy
+            inst = [obj.instr for obj in cat.easy_instr.all()]
+
+        elif level == "medium":
+            time = cat.time_per_ques_medium
+            inst = [obj.instr for obj in cat.medium_instr.all()]
+
+        elif level == "hard":
+            time = cat.time_per_ques_hard
+            inst = [obj.instr for obj in cat.hard_instr.all()]
+        json_obj = dict(count=count, time_per_ques=time, instruction=inst)
+        return Response(json_obj, status=status.HTTP_200_OK)
+
 
 class PlayQuiz(APIView):
     # permission_classes = (permissions.IsAuthenticated,)
@@ -237,10 +262,9 @@ class PlayQuiz(APIView):
     def get(self, *args, **kwargs):
         category = self.kwargs["category"]
         level = self.kwargs["level"]
-        cat = Category.objects.filter(category=category)
-        quiz = Quiz.objects.filter(category=cat, level=level)
-        quiz = [c.for_json() for c in quiz]
-        print(quiz)
+        no = int(self.kwargs["pk"])-1
+        cat = Category.objects.get(category=category)
+        quiz = Quiz.objects.filter(category=cat, level=level)[no]
+        quiz = quiz.for_json()
         return Response(quiz, status=status.HTTP_200_OK)
-
 
