@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
-from apps.models import Profile, Category
+from apps.models import Profile, Category, Score
 
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -97,4 +97,39 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['category']
+
+
+class GetScoreSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username', read_only=True)
+    category = serializers.ReadOnlyField(source='category.category', read_only=True)
+
+    class Meta:
+        model = Score
+        read_only_fields = ('user', 'category')
+        fields = ['score', 'category', 'user']
+
+    # def update(self, instance, validated_data):
+    #     print("updating")
+    #     score = validated_data.get("score")
+    #     print(score)
+    #     user = self.request.user
+    #     cat = Category.objects.get(category=self.kwargs["category"])
+    #     prev_score = Score.objects.get(user=user, category=cat).score
+    #     if float(prev_score) < float(score):
+    #         instance.score = float(score)
+    #     else:
+    #         instance.score = float(prev_score)
+    #     instance.save()
+    #     return instance
+    #
+    def create(self, validated_data):
+        current_score = validated_data.get("score")
+        cat_obj = validated_data.get("category")
+        user = validated_data.get("user")
+        obj, created = Score.objects.get_or_create(user=user, category=cat_obj)
+        prev_score = obj.score
+        if current_score > prev_score:
+            obj.score = current_score
+        obj.save()
+        return obj
 

@@ -1,14 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, mixins, generics
 from apps.serializers import SignupSerializer,\
                             LoginSerializer,\
                             ProfileSerializer,\
                             ChangePasswordSerializer,\
                             ForgetPasswordSerializer,\
-                            SetPasswordSerializer, CategorySerializer
+                            SetPasswordSerializer, \
+                            GetScoreSerializer
 from django.contrib.auth.models import User
-from apps.models import Profile, Category, Quiz
+from apps.models import Profile, Category, Quiz, Score
 from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
 from quizup.settings import EMAIL_HOST_USER
@@ -268,3 +269,76 @@ class PlayQuiz(APIView):
         quiz = quiz.for_json()
         return Response(quiz, status=status.HTTP_200_OK)
 
+
+class GetScore(APIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = GetScoreSerializer
+
+    def post(self, *args, **kwargs):
+        print("hello")
+        serializer = self.serializer_class(data=self.request.data)
+        print(serializer)
+
+        if serializer.is_valid():
+            print("111111")
+            category = self.kwargs["category"]
+            cat_obj = Category.objects.get(category=category)
+            serializer.save(user=self.request.user, category=cat_obj)
+            print("12222")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+#     def get_queryset(self):
+#         user = self.request.user
+#         print("---->", user)
+#         category = self.kwargs["category"]
+#         print("---->", category)
+#         cat_obj = Category.objects.get(category=category)
+#         print("---->",cat_obj)
+#         print(Score.objects.get(user=user, category=cat_obj))
+#         return Score.objects.get(user=user, category=cat_obj)
+#
+#     def perform_create(self, serializer):
+#         category = self.kwargs["category"]
+#         cat_obj = Category.objects.get(category=category)
+#         serializer.save(user=self.request.user, category=cat_obj)
+#
+#     def perform_update(self, serializer):
+#         serializer.save()
+#         # category = self.kwargs["category"]
+#         # cat_obj = Category.objects.get(category=category)
+#         # prev_score = Score.objects.get(user=self.request.user, category=cat_obj).score
+#         # current_score = serializer.data["score"]
+#         # if current_score>prev_score:
+#         #     serializer.save(user=self.request.user, category=cat_obj, score=current_score)
+#         # else:
+#         #     serializer.save(user=self.request.user, category=cat_obj, score=prev_score)
+#
+#
+# # def post(self, *args, **kwargs):
+#     #     print("hello")
+#     #     serializer = self.serializer_class(data=self.request.data)
+#     #     print(serializer)
+#     #
+#     #     if serializer.is_valid():
+#     #         print("111111")
+#     #         category = self.kwargs["category"]
+#     #         cat_obj = Category.objects.get(category=category)
+#     #         serializer.save(user=self.request.user, category=cat_obj)
+#     #         print("12222")
+#     #         return Response(serializer.data, status=status.HTTP_200_OK)
+#     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#             # category = self.kwargs["category"]
+#             # cat_obj = Category.objects.get(category=category)
+#             # current_score = serializer.data["score"]
+#             # if Score.objects.filter(user=self.request.user, category=cat_obj).exists():
+#             #
+#             #     serializer.update()
+#             #
+#             # prev_score = Score.objects.get(user=self.request.user, category=cat_obj).score
