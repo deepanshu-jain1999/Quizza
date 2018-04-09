@@ -29,6 +29,8 @@ urlpatterns = format_suffix_patterns([
     url(r'^home/category/(?P<category>\w+)/result/$', views.GetScore.as_view(), name='result'),
 ])
 
-# urlpatterns += [
-#     url(r'^', include(router.urls)),
-# ]
+urlpatterns += [
+    url(r'^home/category/(?P<category>\w+)/compete/$', views.CompeteQuizView.as_view(), name='compete_game'),
+]
+
+

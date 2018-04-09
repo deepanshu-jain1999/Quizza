@@ -1,0 +1,4 @@
+{
+  "apps/test_category.py::test_check": true,
+  "apps/test_category.py::test_needsfiles": true
+}

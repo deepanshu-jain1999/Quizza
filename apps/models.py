@@ -136,7 +136,6 @@ class CompeteQuiz(models.Model):
 
     def for_json(self):
         return dict(
-            id=self.id,
             question=self.question,
             option1=self.option1,
             option2=self.option2,

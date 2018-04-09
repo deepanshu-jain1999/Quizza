@@ -25,7 +25,7 @@ SECRET_KEY = '9*62c!00c2x@h8tj_xuubyjnecd#^1rza8gtvxq@%5)tdmhnh5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["192.168.100.110"]
 
 
 # Application definition
@@ -40,6 +40,8 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_docs',
+    'channels_api',
+    'channels_framework',
     'apps',
 )
 

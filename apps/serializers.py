@@ -71,16 +71,14 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(min_length=8)
     new_confirm_password = serializers.CharField(min_length=8)
 
-    class Meta:
+    def validate(self, attrs):
+        old_password = attrs.get('old_password')
+        new_password = attrs.get('new_password')
+        new_confirm_password = attrs.get('new_confirm_password')
 
-        def validate(self, attrs):
-            old_password = attrs.get('old_password')
-            new_password = attrs.get('new_password')
-            new_confirm_password = attrs.get('new_confirm_password')
-
-            if new_password != new_confirm_password:
-                message = "Enter the same password"
-                raise serializers.ValidationError(message)
+        if new_password != new_confirm_password:
+            message = "Enter the same password"
+            raise serializers.ValidationError(message)
 
 
 class ForgetPasswordSerializer(serializers.Serializer):
@@ -108,20 +106,6 @@ class GetScoreSerializer(serializers.ModelSerializer):
         read_only_fields = ('user', 'category')
         fields = ['score', 'category', 'user']
 
-    # def update(self, instance, validated_data):
-    #     print("updating")
-    #     score = validated_data.get("score")
-    #     print(score)
-    #     user = self.request.user
-    #     cat = Category.objects.get(category=self.kwargs["category"])
-    #     prev_score = Score.objects.get(user=user, category=cat).score
-    #     if float(prev_score) < float(score):
-    #         instance.score = float(score)
-    #     else:
-    #         instance.score = float(prev_score)
-    #     instance.save()
-    #     return instance
-    #
     def create(self, validated_data):
         current_score = validated_data.get("score")
         cat_obj = validated_data.get("category")
