@@ -125,50 +125,33 @@ class Login(APIView):
 #     def perform_create(self, serializer):
 #         serializer.save(user=self.request.user)
 
-class ProfileDetail(APIView):
+class UserProfile(APIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ProfileSerializer
-    print("123")
 
     def get(self, request, *args, **kwargs):
-        print("132434")
-        profile = Profile.objects.get(user=self.request.user)
-        print(profile)
-        profile = profile.for_json()
-        return Response(profile, status=status.HTTP_200_OK)
+        queryset = Profile.objects.get(user=self.request.user)
+        serializer = self.serializer_class(queryset, context={"request": request})
+        data = serializer.data
+        score = Score.objects.filter(user=self.request.user)
+        score_dic = {}
+        for obj in score:
+            cat_name = obj.category.category
+            score = obj.score
+            score_dic[cat_name] = score
+        print(score_dic)
+        cat_with_score = {"category": [score_dic]}
+        data.update(cat_with_score)
+        return Response(data, status=status.HTTP_200_OK)
 
-    def post(self):
-        print("1345464")
-        serializer = self.serializer_class(data=self.request.data)
+    def put(self, request):
+        profile = Profile.objects.get(user=request.user)
+        serializer = self.serializer_class(profile, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
-
-
-# class ProfileList(generics.ListCreateAPIView):
-#     authentication_classes = (TokenAuthentication,)
-#     permission_classes = (permissions.IsAuthenticated,)
-#     serializer_class = ProfileSerializer
-#
-#     def get_queryset(self):
-#         user = self.request.user
-#         return Profile.objects.filter(user=user)
-#
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
-#
-#
-# class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
-#     permission_classes = (permissions.IsAuthenticated,)
-#     authentication_classes = (TokenAuthentication,)
-#     serializer_class = ProfileSerializer
-#
-#     def get_queryset(self):
-#         user = self.request.user
-#         return Profile.objects.filter(user=user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ChangePassword(APIView):
@@ -244,9 +227,9 @@ class CategoryList(APIView):
     serializer_class = CategorySerializer
 
     def get(self, format=None):
-        cat = [cat.for_json() for cat in Category.objects.all()]
-        print(json.dumps(cat))
-        return Response(cat, status=status.HTTP_200_OK)
+        queryset = Category.objects.all()
+        serializer = self.serializer_class(queryset, many=True, context={"request": self.request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class Instruction(APIView):

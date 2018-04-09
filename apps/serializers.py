@@ -94,7 +94,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ['category']
+        fields = ['category', 'cat_img']
 
 
 class GetScoreSerializer(serializers.ModelSerializer):

@@ -41,8 +41,8 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_docs',
-    'channels_api',
-    'channels_framework',
+    # 'channels_api',
+    # 'channels_framework',
     'apps',
 )
 

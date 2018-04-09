@@ -18,7 +18,8 @@ class Profile(models.Model):
     def for_json(self):
         return dict(
             name=self.name,
-            # profile_pic=self.profile_pic
+            city=self.city,
+            profile_pic=self.profile_pic
         )
 
 

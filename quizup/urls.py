@@ -13,8 +13,8 @@ urlpatterns = [
     url(r'^', include('apps.urls')),
     url(r'^docs/', include('rest_framework_docs.urls')),
 
-] # + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+ ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-urlpatterns += patterns('',
-        (r'^media/(?P<path>.*)$', 'django.views.static.serve', {
-        'document_root': settings.MEDIA_ROOT}))
+# urlpatterns += patterns('',
+#         (r'^media/(?P<path>.*)$', 'django.views.static.serve', {
+#         'document_root': settings.MEDIA_ROOT}))
