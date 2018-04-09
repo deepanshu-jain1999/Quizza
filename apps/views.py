@@ -88,6 +88,7 @@ class Activate(ListView):
             user = None
         if user is not None and account_activation_token.check_token(user, self.kwargs['token']):
             user.is_active = True
+            Profile.objects.create(user=user)
             user.save()
             # login(request, user)
             return redirect('http://localhost:4200/welcome')
@@ -102,8 +103,6 @@ class Login(APIView):
         serializer = self.serializer_class(data=self.request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            print("-----", str(self.request.user))
-
             return Response({'token': user.auth_token.key}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
@@ -126,28 +125,50 @@ class Login(APIView):
 #     def perform_create(self, serializer):
 #         serializer.save(user=self.request.user)
 
-
-class ProfileList(generics.ListCreateAPIView):
+class ProfileDetail(APIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ProfileSerializer
+    print("123")
 
-    def get_queryset(self):
-        user = self.request.user
-        return Profile.objects.filter(user=user)
+    def get(self, request, *args, **kwargs):
+        print("132434")
+        profile = Profile.objects.get(user=self.request.user)
+        print(profile)
+        profile = profile.for_json()
+        return Response(profile, status=status.HTTP_200_OK)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+    def post(self):
+        print("1345464")
+        serializer = self.serializer_class(data=self.request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
-class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
-    serializer_class = ProfileSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        return Profile.objects.filter(user=user)
+# class ProfileList(generics.ListCreateAPIView):
+#     authentication_classes = (TokenAuthentication,)
+#     permission_classes = (permissions.IsAuthenticated,)
+#     serializer_class = ProfileSerializer
+#
+#     def get_queryset(self):
+#         user = self.request.user
+#         return Profile.objects.filter(user=user)
+#
+#     def perform_create(self, serializer):
+#         serializer.save(user=self.request.user)
+#
+#
+# class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
+#     permission_classes = (permissions.IsAuthenticated,)
+#     authentication_classes = (TokenAuthentication,)
+#     serializer_class = ProfileSerializer
+#
+#     def get_queryset(self):
+#         user = self.request.user
+#         return Profile.objects.filter(user=user)
 
 
 class ChangePassword(APIView):
@@ -229,8 +250,8 @@ class CategoryList(APIView):
 
 
 class Instruction(APIView):
-    # permission_classes = (permissions.IsAuthenticated,)
-    # authentication_classes = (TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, *args, **kwargs):
         category = self.kwargs["category"]
@@ -255,9 +276,9 @@ class Instruction(APIView):
 
 
 class PlayQuiz(APIView):
-    # permission_classes = (permissions.IsAuthenticated,)
-    # authentication_classes = (TokenAuthentication,)
-    # serializer_class = CategorySerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = CategorySerializer
 
     def get(self, *args, **kwargs):
         category = self.kwargs["category"]
@@ -270,31 +291,26 @@ class PlayQuiz(APIView):
 
 
 class GetScore(APIView):
-    # authentication_classes = (TokenAuthentication,)
-    # permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = GetScoreSerializer
 
     def post(self, *args, **kwargs):
-        print("hello")
         serializer = self.serializer_class(data=self.request.data)
         print(serializer)
 
         if serializer.is_valid():
-            print("111111")
             category = self.kwargs["category"]
-            token = self.kwargs["token"]
-            print("token")
             cat_obj = Category.objects.get(category=category)
             serializer.save(user=self.request.user, category=cat_obj)
-            print("12222")
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CompeteQuizView(APIView):
-    # permission_classes = (permissions.IsAuthenticated,)
-    # authentication_classes = (TokenAuthentication,)
-    # serializer_class = CategorySerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = CategorySerializer
 
     def get(self, *args, **kwargs):
         category = self.kwargs["category"]

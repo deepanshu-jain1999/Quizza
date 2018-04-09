@@ -8,12 +8,18 @@ from django.core.files.images import get_image_dimensions
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100, blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    profile_pic = models.ImageField(upload_to='profile_pic/', blank=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    profile_pic = models.ImageField(upload_to='profile_pic/', default='profile_pic/default.jpg')
 
     def __str__(self):
         return self.user.username
+
+    def for_json(self):
+        return dict(
+            name=self.name,
+            # profile_pic=self.profile_pic
+        )
 
 
 def get_image_name(self, imagename):  # to give unique id to images uploaded

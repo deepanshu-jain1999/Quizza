@@ -16,7 +16,7 @@ urlpatterns = format_suffix_patterns([
         views.Activate.as_view(), name='activate'),
     url(r'^login/$', views.Login.as_view(), name='login'),
     url(r'^logout/$', built_views.logout, {'next_page': 'login'}, name='logout'),
-    url(r'^home/profile/$', views.ProfileList.as_view(), name='profile-list'),
+    url(r'^home/profile/$', views.ProfileDetail.as_view(), name='profile-list'),
     url(r'^home/profile/(?P<pk>[0-9]+)/$', views.ProfileDetail.as_view(), name='profile-detail'),
     url(r'^set_user_password/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         views.ChangeForgetPassword.as_view(), name='change_forget_password'),
