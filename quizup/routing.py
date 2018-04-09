@@ -5,7 +5,7 @@ from channels.generic.websockets import WebsocketDemultiplexer
 
 class APIDemultiplexer(WebsocketDemultiplexer):
     mapping = {
-      'questions': 'questions_channel'
+      'question': 'questions_channel'
     }
 
 

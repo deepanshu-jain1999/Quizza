@@ -25,7 +25,7 @@ SECRET_KEY = '9*62c!00c2x@h8tj_xuubyjnecd#^1rza8gtvxq@%5)tdmhnh5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.100.110"]
+ALLOWED_HOSTS = ["192.168.100.113"]
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_docs',
@@ -59,6 +60,8 @@ INSTALLED_APPS = (
 
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -71,6 +74,8 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'quizup.urls'
 
+
+CORS_ORIGIN_ALLOW_ALL = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
