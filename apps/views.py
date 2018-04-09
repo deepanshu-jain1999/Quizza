@@ -298,12 +298,8 @@ class CompeteQuizView(APIView):
 
     def get(self, *args, **kwargs):
         category = self.kwargs["category"]
-        print(category)
         cat = Category.objects.get(category=category)
-        print(cat)
         quiz = CompeteQuiz.objects.filter(category=cat)
-        print(quiz)
         quiz = [quiz_obj.for_json() for quiz_obj in quiz]
-        print(quiz)
         return Response(quiz, status=status.HTTP_200_OK)
 
