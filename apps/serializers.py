@@ -110,8 +110,10 @@ class GetScoreSerializer(serializers.ModelSerializer):
         current_score = validated_data.get("score")
         cat_obj = validated_data.get("category")
         user = validated_data.get("user")
+        total_ques = validated_data.get("total_ques")
         obj, created = Score.objects.get_or_create(user=user, category=cat_obj)
         prev_score = obj.score
+        current_score = current_score/total_ques*100
         if current_score > prev_score:
             obj.score = current_score
         obj.save()
