@@ -6,11 +6,18 @@ import uuid
 from django.core.files.images import get_image_dimensions
 
 
+def upload_profile_image(self, imagename):  # to give unique id to images uploaded
+    ext = imagename.split('.')[-1]
+    first_part = uuid.uuid4()
+    imagename = "%s.%s" % (first_part,  ext)
+    return os.path.join('profile_pic/', imagename)
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
-    profile_pic = models.ImageField(upload_to='profile_pic/', default='profile_pic/default.jpg')
+    profile_pic = models.ImageField(upload_to=upload_profile_image, default='profile_pic/default.jpg')
 
     def __str__(self):
         return self.user.username
@@ -19,7 +26,7 @@ class Profile(models.Model):
         return dict(
             name=self.name,
             city=self.city,
-            profile_pic=self.profile_pic
+            # profile_pic=self.profile_pic
         )
 
 
@@ -163,6 +170,3 @@ class Score(models.Model):
 
     def __str__(self):
         return str(self.user.username)+ "_" + str(self.category.category)
-
-
-

@@ -140,14 +140,13 @@ class UserProfile(APIView):
             cat_name = obj.category.category
             score = obj.all_score
             score_dic[cat_name] = score
-        print(score_dic)
         cat_with_score = {"category": score_dic}
         data.update(cat_with_score)
         return Response(data, status=status.HTTP_200_OK)
 
     def put(self, request):
         profile = Profile.objects.get(user=request.user)
-        serializer = self.serializer_class(profile, data=request.data, context={"request": request})
+        serializer = self.serializer_class(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -284,10 +283,15 @@ class GetScore(APIView):
 
         if serializer.is_valid():
             category = self.kwargs["category"]
+            print(category)
             level = self.kwargs["level"]
+            print(level)
             cat_obj = Category.objects.get(category=category)
-            total_ques = Quiz.objects.filter(category=cat_obj.category, level=level ).count()
-            serializer.save(user=self.request.user, category=cat_obj, total_ques=total_ques)
+            print(cat_obj)
+            total_ques = Quiz.objects.filter(category=cat_obj, level=level).count()
+            print(total_ques)
+            serializer.save(user=self.request.user, category=cat_obj, total_ques=total_ques, level=level)
+            print("ok")
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

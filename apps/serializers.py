@@ -59,11 +59,11 @@ class LoginSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
+    # user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
         model = Profile
-        fields = ['name', 'city', 'profile_pic', 'user']
+        fields = ['profile_pic', 'name', 'city']
 
 
 class ChangePasswordSerializer(serializers.Serializer):
@@ -104,18 +104,30 @@ class GetScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Score
         read_only_fields = ('user', 'category')
-        fields = ['score', 'category', 'user']
+        fields = ['all_score', 'category', 'user']
 
     def create(self, validated_data):
-        current_score = validated_data.get("score")
+        current_score = validated_data.get("all_score")
         cat_obj = validated_data.get("category")
         user = validated_data.get("user")
+        level = validated_data.get("level")
         total_ques = validated_data.get("total_ques")
         obj, created = Score.objects.get_or_create(user=user, category=cat_obj)
-        prev_score = obj.easy_score
+
         current_score = current_score/total_ques*100
-        if current_score > prev_score:
-            obj.easy_score = current_score
+        if level == "easy":
+            prev_score = obj.easy_score
+            if current_score > prev_score:
+                obj.easy_score = current_score
+        elif level == "medium":
+            prev_score = obj.medium_score
+            if current_score > prev_score:
+                obj.medium_score = current_score
+        elif level == "hard":
+            prev_score = obj.hard_score
+            if current_score > prev_score:
+                obj.medium_score = current_score
+
         easy = obj.easy_score
         med = obj.medium_score
         hard = obj.hard_score
