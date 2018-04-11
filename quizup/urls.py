@@ -1,20 +1,16 @@
-from django.conf.urls import include, url, patterns
+from django.urls import include, path
 from django.contrib import admin
 from . import settings
 from django.conf.urls.static import static
+from rest_framework.documentation import include_docs_urls
 
 
 urlpatterns = [
-    # Examples:
-    # url(r'^$', 'quizup.views.home', name='home'),
-    # url(r'^blog/', include('blog.urls')),
-
-    url(r'^admin/', admin.site.urls),
-    url(r'^', include('apps.urls')),
-    url(r'^docs/', include('rest_framework_docs.urls')),
+    path('admin/', admin.site.urls),
+    path('', include('apps.urls')),
 
  ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# urlpatterns += patterns('',
-#         (r'^media/(?P<path>.*)$', 'django.views.static.serve', {
-#         'document_root': settings.MEDIA_ROOT}))
+urlpatterns += [
+    path('docs/', include_docs_urls(title='Quizza api docs'))
+]

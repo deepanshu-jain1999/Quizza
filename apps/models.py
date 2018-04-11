@@ -12,7 +12,7 @@ def upload_profile_image(self, imagename):  # to give unique id to images upload
     imagename = "%s.%s" % (first_part,  ext)
     return os.path.join('profile_pic/', imagename)
 
-
+#
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -113,7 +113,7 @@ level_choice = (("easy", "Easy"), ("medium", "Medium"), ("hard", "Hard"))
 
 
 class Quiz(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
     level = models.CharField(max_length=20, choices=level_choice, default="NONE")
     question = models.TextField(max_length=1000)
     option1 = models.CharField(max_length=500)

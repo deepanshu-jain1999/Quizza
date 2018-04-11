@@ -25,8 +25,9 @@ SECRET_KEY = '9*62c!00c2x@h8tj_xuubyjnecd#^1rza8gtvxq@%5)tdmhnh5'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.100.113"]
+ALLOWED_HOSTS = ["192.168.100.113", "*"]
 
+ASGI_APPLICATION = "quizup.routing.application"
 
 # Application definition
 
@@ -39,61 +40,22 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'rest_framework.authtoken',
-    'rest_framework_docs',
-    # 'channels_api',
-    # 'channels_framework',
+    'channels',
     'apps',
 )
 
-
-
-# MIDDLEWARE = [
-#     'django.middleware.security.SecurityMiddleware',
-#     'django.contrib.sessions.middleware.SessionMiddleware',
-#     'django.middleware.common.CommonMiddleware',
-#     'django.middleware.csrf.CsrfViewMiddleware',
-#     'django.contrib.auth.middleware.AuthenticationMiddleware',
-#     'django.contrib.messages.middleware.MessageMiddleware',
-#     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-# ]
-
-
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-)
-
-ROOT_URLCONF = 'quizup.urls'
-
-
-CORS_ORIGIN_ALLOW_ALL = True
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
 ]
 
 WSGI_APPLICATION = 'quizup.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
@@ -138,3 +100,11 @@ EMAIL_USE_TLS = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+CHANNEL_LAYERS = {
+"default": {
+"BACKEND": "asgi_redis.RedisChannelLayer",
+"CONFIG": {
+"hosts": [("redis-server-name", 6379)],
+},
+},
+}

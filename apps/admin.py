@@ -10,7 +10,6 @@ admin.site.register(Score)
 admin.site.register(CompeteQuiz)
 
 
-
 class QuizAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Category', {'fields': ['category']}),
