@@ -25,7 +25,7 @@ urlpatterns = format_suffix_patterns([
     url(r'^home/category/$', views.CategoryList.as_view(), name='category_list'),
     url(r'^home/category/(?P<category>\w+)/practice/(?P<level>\w+)/instruction/$', views.Instruction.as_view(), name='instruction'),
     url(r'^home/category/(?P<category>\w+)/practice/(?P<level>\w+)/start/(?P<pk>[0-9]+)/$', views.PlayQuiz.as_view(), name='start_game'),
-    url(r'^home/category/(?P<category>\w+)/result/$', views.GetScore.as_view(), name='result'),
+    url(r'^home/category/(?P<category>\w+)/(?P<level>\w+)/result/$', views.GetScore.as_view(), name='result'),
 ])
 
 urlpatterns += [

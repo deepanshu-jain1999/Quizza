@@ -112,10 +112,15 @@ class GetScoreSerializer(serializers.ModelSerializer):
         user = validated_data.get("user")
         total_ques = validated_data.get("total_ques")
         obj, created = Score.objects.get_or_create(user=user, category=cat_obj)
-        prev_score = obj.score
+        prev_score = obj.easy_score
         current_score = current_score/total_ques*100
         if current_score > prev_score:
-            obj.score = current_score
+            obj.easy_score = current_score
+        easy = obj.easy_score
+        med = obj.medium_score
+        hard = obj.hard_score
+        total_score = (easy + med + hard)/3
+        obj.all_score = total_score
         obj.save()
         return obj
 
