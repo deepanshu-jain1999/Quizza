@@ -58,7 +58,7 @@ def email_send(user, username, email, current_site, button, text):
     msg_html = render_to_string('apps/email_template.html', {
         'user': username,
         'domain': current_site.domain,
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),        # add .decode() in django2+
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),        # add .decode() in django2+
         'token': account_activation_token.make_token(user),
         'button': button,
         'text': text,

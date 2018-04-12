@@ -1,7 +1,8 @@
 from django.urls import re_path
+from django.conf.urls import url
 
 from . import consumers
 
 websocket_urlpatterns = [
-    re_path(r'^home/category/(?P<category>\w+)/compete/$', consumers.PlayConsumer),
+    url(r'^home/category/(?P<category>\w+)/compete/$', consumers.PlayConsumer),
 ]

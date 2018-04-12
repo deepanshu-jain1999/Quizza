@@ -27,11 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["192.168.100.113", "*"]
 
-ASGI_APPLICATION = "quizup.routing.application"
 
 # Application definition
 
 INSTALLED_APPS = (
+    'rest_framework',
+    'rest_framework.authtoken',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,8 +41,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'rest_framework',
-    'channels',
     'apps',
 )
 
@@ -70,6 +70,7 @@ DATABASES = {
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
+ROOT_URLCONF = 'quizup.urls'
 
 LANGUAGE_CODE = 'en-us'
 
@@ -91,6 +92,23 @@ REST_FRAMEWORK = {
     )
 }
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -108,13 +126,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # },
 # },
 # }
-
+ASGI_APPLICATION = "quizup.routing.application"
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [( 6379)],
+            "hosts": [('localhost', 6379)],
         },
     }
 }
