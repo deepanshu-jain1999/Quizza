@@ -100,11 +100,21 @@ EMAIL_USE_TLS = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# CHANNEL_LAYERS = {
+# "default": {
+# "BACKEND": "asgi_redis.RedisChannelLayer",
+# "CONFIG": {
+# "hosts": [("redis-server-name", 6379)],
+# },
+# },
+# }
+
+
 CHANNEL_LAYERS = {
-"default": {
-"BACKEND": "asgi_redis.RedisChannelLayer",
-"CONFIG": {
-"hosts": [("redis-server-name", 6379)],
-},
-},
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [( 6379)],
+        },
+    }
 }

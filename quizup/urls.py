@@ -6,8 +6,8 @@ from rest_framework.documentation import include_docs_urls
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('apps.urls')),
+    path('/admin/', admin.site.urls),
+    # path('/api/', include('apps.urls')),
 
  ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

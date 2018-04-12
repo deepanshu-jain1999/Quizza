@@ -32,4 +32,3 @@ urlpatterns += [
     re_path(r'^home/category/(?P<category>\w+)/compete/$', views.CompeteQuizView.as_view(), name='compete_game'),
 ]
 
-
