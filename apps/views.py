@@ -154,13 +154,17 @@ class UserProfile(APIView):
 
 
 class ChangePassword(APIView):
+    print("aao")
     serializer_class = ChangePasswordSerializer
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
-    def post(self, format=None, **kwargs, ):
+    def post(self, format=None):
+        print(self.request.data)
         serializer = self.serializer_class(data=self.request.data)
+        print("here")
         if serializer.is_valid():
+            print("ok")
             old_password = serializer.validated_data['old_password']
             new_password = serializer.validated_data['new_password']
             user = authenticate(username=self.request.user.username, password=old_password)
@@ -168,7 +172,7 @@ class ChangePassword(APIView):
                 user = self.request.user
                 user.set_password(new_password)
                 user.save()
-                return Response({'token': user.auth_token.key}, status=status.HTTP_200_OK)
+                return Response(status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 

@@ -170,3 +170,5 @@ class Score(models.Model):
 
     def __str__(self):
         return str(self.user.username)+ "_" + str(self.category.category)
+
+# class CompetitionInstruction(models.Model):

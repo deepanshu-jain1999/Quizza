@@ -72,11 +72,13 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_confirm_password = serializers.CharField(min_length=8)
 
     def validate(self, attrs):
+        print("here")
         old_password = attrs.get('old_password')
         new_password = attrs.get('new_password')
-        new_confirm_password = attrs.get('new_confirm_password')
+        new_conf_pass = attrs.get('new_conf_pass')
+        print("nahi nahi")
 
-        if new_password != new_confirm_password:
+        if new_password != new_conf_pass:
             message = "Enter the same password"
             raise serializers.ValidationError(message)
 

@@ -8,7 +8,7 @@ from rest_framework.documentation import include_docs_urls
 
 urlpatterns = [
     path(r'admin/', admin.site.urls),
-    path(r'api/', include('apps.urls')),
+    path(r'', include('apps.urls')),
     url(r'^docs/', include_docs_urls(title='Quizza api docs'))
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

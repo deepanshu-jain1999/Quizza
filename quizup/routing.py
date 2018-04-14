@@ -4,7 +4,7 @@ import apps.routing
 import os
 
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quizup.settings")
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quizup.settings")
 
 application = ProtocolTypeRouter({
     # (http->django views is added by default)
