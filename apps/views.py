@@ -26,6 +26,7 @@ from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate
 from django.core import serializers
 import json
+import time
 
 
 class Signup(APIView):
@@ -49,7 +50,6 @@ class Signup(APIView):
                 button = "Activate"
                 email_send(user, username, email, current_site, button, text)
                 return Response(json, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -311,4 +311,19 @@ class CompeteQuizView(APIView):
         quiz = CompeteQuiz.objects.filter(category=cat)
         quiz = [quiz_obj.for_json() for quiz_obj in quiz]
         return Response(quiz, status=status.HTTP_200_OK)
+
+
+class CompeteInstruction(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, *args, **kwargs):
+        category = self.kwargs["category"]
+        cat = Category.objects.get(category=category)
+        count = CompeteQuiz.objects.filter(category=cat).count()
+        instr = [obj.instr for obj in cat.compete_instr.all()]
+        time = cat.compete_time
+        dic = dict(instruction=instr, time_per_question=time, count=count)
+        return Response(dic, status=status.HTTP_200_OK)
+
 

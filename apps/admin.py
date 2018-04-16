@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.models import Profile, CompeteQuiz, Quiz, Category, EasyInstruction, MediumInstruction, HardInstruction, Score
+from apps.models import Profile, CompeteInstruction, CompeteQuiz, Quiz, Category, EasyInstruction, MediumInstruction, HardInstruction, Score
 # Register your models here.
 admin.site.register(Profile)
 admin.site.register(Category)
@@ -8,6 +8,7 @@ admin.site.register(MediumInstruction)
 admin.site.register(HardInstruction)
 admin.site.register(Score)
 admin.site.register(CompeteQuiz)
+admin.site.register(CompeteInstruction)
 
 
 class QuizAdmin(admin.ModelAdmin):

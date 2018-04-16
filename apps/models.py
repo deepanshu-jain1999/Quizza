@@ -52,11 +52,15 @@ class MediumInstruction(models.Model):
         return "MediumInstruction :- " + str(self.id)
 
 
+
 class HardInstruction(models.Model):
     instr = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return "HardInstruction :- " + str(self.id)
+
+class CompeteInstruction(models.Model):
+    instr = models.CharField(max_length=400, blank=True)
 
 
 class Category(models.Model):
@@ -68,6 +72,8 @@ class Category(models.Model):
     easy_instr = models.ManyToManyField(EasyInstruction)
     medium_instr = models.ManyToManyField(MediumInstruction)
     hard_instr = models.ManyToManyField(HardInstruction)
+    compete_instr = models.ManyToManyField(CompeteInstruction)
+    compete_time = models.IntegerField(default=20)
 
     def __str__(self):
         return self.category
@@ -171,4 +177,4 @@ class Score(models.Model):
     def __str__(self):
         return str(self.user.username)+ "_" + str(self.category.category)
 
-# class CompetitionInstruction(models.Model):
+
