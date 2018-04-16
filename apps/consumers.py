@@ -6,39 +6,74 @@ from .models import CompeteQuiz, Category
 import time
 from asgiref.sync import async_to_sync
 
+current_time = time.time()
+x = 0
+method = 0
+
 
 class CollectConsumer(JsonWebsocketConsumer):
-    # permission_classes = (permissions.IsAuthenticated,)
-    # authentication_classes = (TokenAuthentication,)
-    current_time = time.time()
-    x = 0
+    print("hello")
 
-    def get_question(self, cat):
+    def get_question(self, cat, i):
         cat_obj = Category.objects.get(category=cat)
-        quiz = CompeteQuiz.objects.filter(category=cat_obj)
-        quiz = [quiz_obj.for_json() for quiz_obj in quiz]
+        quiz = CompeteQuiz.objects.filter(category=cat_obj)[i]
+        quiz = [quiz.for_json()]
         return quiz
 
     def connect(self):
-        async_to_sync(self.channel_layer.group_add)("player", self.channel_name)
-        self.x += 1
+        global method
+        global x
+        if method == 1:
+            self.close()
+
         self.accept()
 
-    def receive(self, text_data, **kwargs):
-        # from_time = time.time()
-        print(self.current_time)
-        if self.x < 2:
-            self.current_time = time.time()
+    def receive(self, **kwargs):
+
+        global x, method, current_time
+        x += 1
+        print("1-->", current_time, x)
+        if x < 2:
+            current_time = time.time()
+        print("2-->", current_time, x)
+        time.sleep(current_time+20-time.time())
         cat = self.scope["url_route"]["kwargs"]["category"]
-        d = self.get_question(cat)
-        time.sleep(time.time()+20-self.current_time)
-        async_to_sync(self.channel_layer.group_send)(
-            "player",
-            {
-                "type": "player.question",
-                "text": json.dumps(d),
-            },
-        )
+        cat_obj = Category.objects.get(category=cat)
+        time_per_ques = cat_obj.compete_time
+        total_ques = CompeteQuiz.objects.filter(category=cat_obj).count()
+        for i in range(total_ques):
+            d = self.get_question(cat, i)
+            time.sleep(time_per_ques)
+            self.send(text_data=json.dumps({
+                'message': d
+            }))
+
+    def disconnect(self, code):
+        global x, method
+        x -= 1
+        if x == 0:
+            method = 0
+        self.close()
+
+    # def receive(self, text_data, **kwargs):
+    #     # from_time = time.time()
+    #     print(self.current_time)
+    #     if self.x < 2:
+    #         self.current_time = time.time()
+    #     cat = self.scope["url_route"]["kwargs"]["category"]
+    #     d = self.get_question(cat)
+    #     time.sleep(time.time()+20-self.current_time)
+    #     async_to_sync(self.channel_layer.group_send)(
+    #         "player",
+    #         {
+    #             "type": "player.question",
+    #             "text": json.dumps(d),
+    #         },
+    #     )
+
+
+
+
         # print()
         # self.lt.append("1")
         # text_data_json = json.loads(text_data)
@@ -58,10 +93,7 @@ class CollectConsumer(JsonWebsocketConsumer):
         #     'message': d
         # }))
 
-    def player_question(self, event):
-        self.send(text_data=event["text"])
+    # def player_question(self, event):
+    #     self.send(text_data=event["text"])
 
-    def disconnect(self, code):
-        self.x -= 1
-        async_to_sync(self.channel_layer.group_discard)("player", self.channel_name)
 
