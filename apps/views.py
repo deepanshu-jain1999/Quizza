@@ -54,6 +54,9 @@ class Signup(APIView):
 
 
 def email_send(user, username, email, current_site, button, text):
+    """
+    sending email for confirmation of account
+    """
     message = 'hello how are you'
     msg_html = render_to_string('apps/email_template.html', {
         'user': username,
@@ -76,7 +79,9 @@ def email_send(user, username, email, current_site, button, text):
 
 
 class Activate(ListView):
-
+    """
+    Activate user account
+    """
     def get(self, request, *args, **kwargs):
         try:
             x = self.kwargs['uidb64']
@@ -97,6 +102,9 @@ class Activate(ListView):
 
 
 class Login(APIView):
+    """
+    Login the user
+    """
     serializer_class = LoginSerializer
 
     def post(self, format=None, **kwargs,):
@@ -108,24 +116,10 @@ class Login(APIView):
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
-# class ProfileViewSet(viewsets.ModelViewSet):
-#     """
-#        This viewset automatically provides `list`, `create`, `retrieve`,
-#        `update` and `destroy` actions.
-#        Additionally we also provide an extra `highlight` action.
-#      """
-#
-#     permission_classes = (permissions.IsAuthenticated,)
-#     serializer_class = ProfileSerializer
-#
-#     def get_queryset(self):
-#         user = self.request.user
-#         return Profile.objects.filter(user=user)
-#
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
-
 class UserProfile(APIView):
+    """
+    update user profile and display
+    """
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ProfileSerializer
@@ -154,6 +148,9 @@ class UserProfile(APIView):
 
 
 class ChangePassword(APIView):
+    """
+    User can change the password now
+    """
     serializer_class = ChangePasswordSerializer
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
@@ -224,6 +221,9 @@ class SetPassword(APIView):
 
 
 class CategoryList(APIView):
+    """
+    Display all the category of quiz
+    """
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
     serializer_class = CategorySerializer
@@ -235,6 +235,9 @@ class CategoryList(APIView):
 
 
 class Instruction(APIView):
+    """
+    Instruction when user play any quiz in practice mode
+    """
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
@@ -261,6 +264,9 @@ class Instruction(APIView):
 
 
 class PlayQuiz(APIView):
+    """
+    user play practice mode quiz
+    """
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
     serializer_class = CategorySerializer
@@ -276,6 +282,9 @@ class PlayQuiz(APIView):
 
 
 class GetScore(APIView):
+    """
+    after completion of quiz display score (practice mode)
+    """
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = GetScoreSerializer
@@ -299,20 +308,10 @@ class GetScore(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CompeteQuizView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
-    serializer_class = CategorySerializer
-
-    def get(self, *args, **kwargs):
-        category = self.kwargs["category"]
-        cat = Category.objects.get(category=category)
-        quiz = CompeteQuiz.objects.filter(category=cat)
-        quiz = [quiz_obj.for_json() for quiz_obj in quiz]
-        return Response(quiz, status=status.HTTP_200_OK)
-
-
 class CompeteInstruction(APIView):
+    """
+    when user play compete quiz this will give the instruction
+    """
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 

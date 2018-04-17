@@ -19,7 +19,6 @@ class SignupSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(validated_data['username'],
                                         validated_data['email'],
                                         validated_data['password'],
-                                        # is_active=False,
                                         )
         user.is_active = False
         user.save()
@@ -37,23 +36,18 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         username = attrs.get('username')
         password = attrs.get('password')
-        print("-->", attrs)
-
         if username and password:
             user = authenticate(username=username, password=password)
             if user:
                 if not user.is_active:
                     message = "Not authenticate user"
                     raise serializers.ValidationError(message)
-
             else:
                 message = "Not matching username and password"
                 raise serializers.ValidationError(message)
-
         else:
             message = 'Include both username and  password'
             raise serializers.ValidationError(message,)
-
         attrs['user'] = user
         return attrs
 
@@ -72,16 +66,14 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_conf_pass = serializers.CharField(min_length=8)
 
     def validate(self, attrs):
-        print("here")
         old_password = attrs.get('old_password')
         new_password = attrs.get('new_password')
         new_conf_pass = attrs.get('new_conf_pass')
-        print("nahi nahi")
-
         if new_password != new_conf_pass:
             message = "Enter the same password"
             raise serializers.ValidationError(message)
         return attrs
+
 
 class ForgetPasswordSerializer(serializers.Serializer):
     email = serializers.CharField(min_length=8)
