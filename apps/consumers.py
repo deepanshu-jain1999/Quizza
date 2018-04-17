@@ -12,12 +12,11 @@ method = 0
 
 
 class CollectConsumer(JsonWebsocketConsumer):
-    print("hello")
 
     def get_question(self, cat, i):
         cat_obj = Category.objects.get(category=cat)
         quiz = CompeteQuiz.objects.filter(category=cat_obj)[i]
-        quiz = [quiz.for_json()]
+        quiz = quiz.for_json()
         return quiz
 
     def connect(self):
@@ -25,18 +24,19 @@ class CollectConsumer(JsonWebsocketConsumer):
         global x
         if method == 1:
             self.close()
-
         self.accept()
 
     def receive(self, **kwargs):
-
         global x, method, current_time
         x += 1
         print("1-->", current_time, x)
         if x < 2:
             current_time = time.time()
-        print("2-->", current_time, x)
-        time.sleep(current_time+20-time.time())
+        # if time.time()-current_time-20 > 0:
+        #     method = 1
+
+        print("2-->", current_time, x, method)
+        time.sleep(current_time+10-time.time())
         cat = self.scope["url_route"]["kwargs"]["category"]
         cat_obj = Category.objects.get(category=cat)
         time_per_ques = cat_obj.compete_time

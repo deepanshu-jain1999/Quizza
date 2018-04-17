@@ -69,7 +69,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(min_length=8)
     new_password = serializers.CharField(min_length=8)
-    new_confirm_password = serializers.CharField(min_length=8)
+    new_conf_pass = serializers.CharField(min_length=8)
 
     def validate(self, attrs):
         print("here")
@@ -81,7 +81,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         if new_password != new_conf_pass:
             message = "Enter the same password"
             raise serializers.ValidationError(message)
-
+        return attrs
 
 class ForgetPasswordSerializer(serializers.Serializer):
     email = serializers.CharField(min_length=8)
