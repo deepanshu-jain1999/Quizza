@@ -57,9 +57,7 @@ class CollectConsumer(JsonWebsocketConsumer):
         text_data_json = json.loads(text_data)
         token = text_data_json['message']
         score = text_data_json['result']
-        print(score)
         per_score = (score / total_ques) * 100
-        print("score -->", per_score)
         tk[token] = score
         for i in range(total_ques):
             d = self.get_question(cat, i)

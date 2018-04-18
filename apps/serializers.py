@@ -92,13 +92,13 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GetScoreSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username', read_only=True)
-    category = serializers.ReadOnlyField(source='category.category', read_only=True)
+    # user = serializers.ReadOnlyField(source='user.username', read_only=True)
+    # category = serializers.ReadOnlyField(source='category.category', read_only=True)
 
     class Meta:
         model = Score
-        read_only_fields = ('user', 'category')
-        fields = ['all_score', 'category', 'user']
+        # read_only_fields = ('user', 'category')
+        fields = ['all_score']
 
     def create(self, validated_data):
         current_score = validated_data.get("all_score")

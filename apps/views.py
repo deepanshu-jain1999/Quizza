@@ -156,20 +156,17 @@ class ChangePassword(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def post(self, *args, **kwargs):
-        print(self.request.data)
         serializer = self.serializer_class(data=self.request.data)
-        print("here")
         if serializer.is_valid():
-            print("data->", serializer.data)
             old_password = serializer.validated_data['old_password']
             new_password = serializer.validated_data['new_password']
             user = authenticate(username=self.request.user.username, password=old_password)
-            print(user)
             if user:
                 user = self.request.user
                 user.set_password(new_password)
                 user.save()
-                return Response({"message": "password has been changed"}, status=status.HTTP_201_CREATED)
+                msg = "password has been changed"
+                return Response({"message": msg}, status=status.HTTP_201_CREATED)
             msg = "check your current password"
             return Response({"message": msg}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -294,20 +291,14 @@ class GetScore(APIView):
 
     def post(self, *args, **kwargs):
         serializer = self.serializer_class(data=self.request.data)
-        print(serializer)
 
         if serializer.is_valid():
             category = self.kwargs["category"]
-            print(category)
             level = self.kwargs["level"]
-            print(level)
             cat_obj = Category.objects.get(category=category)
-            print(cat_obj)
             total_ques = Quiz.objects.filter(category=cat_obj, level=level).count()
-            print(total_ques)
             serializer.save(user=self.request.user, category=cat_obj, total_ques=total_ques, level=level)
-            print("ok")
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
