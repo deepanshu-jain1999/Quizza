@@ -160,15 +160,18 @@ class ChangePassword(APIView):
         serializer = self.serializer_class(data=self.request.data)
         print("here")
         if serializer.is_valid():
-            print(serializer.data)
+            print("data->", serializer.data)
             old_password = serializer.validated_data['old_password']
             new_password = serializer.validated_data['new_password']
             user = authenticate(username=self.request.user.username, password=old_password)
+            print(user)
             if user:
                 user = self.request.user
                 user.set_password(new_password)
                 user.save()
-                return Response({"message": "password has been changed"}, status=status.HTTP_200_OK)
+                return Response({"message": "password has been changed"}, status=status.HTTP_201_CREATED)
+            msg = "check your current password"
+            return Response({"message": msg}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 

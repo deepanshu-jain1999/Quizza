@@ -1,114 +1,172 @@
-from django.core.urlresolvers import reverse
-from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
+from django.core.management import call_command
+from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
+from rest_framework.test import APITestCase
+from apps.models import Category, Profile, EasyInstruction, MediumInstruction, HardInstruction
+from rest_framework.authtoken.models import Token
 
 
-class AccountsTest(APITestCase):
-    def setUp(self):
-        # We want to go ahead and originally create a user.
-        self.test_user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
-
-        # URL for creating an account.
-        self.create_url = reverse('signup')
+class UserSignupTest(APITestCase):
+    url = reverse('signup')
 
     def test_create_user(self):
-        """
-        Ensure we can create a new user and a valid token is created with it.
-        """
-        data = {
-            "username": "deepanshu",
-            "email": "deepanshuj1999@gmail.com",
-            "password": "fgfhgdxhfggdstyfthgsdtygrf"
-        }
+        data = {'username': 'any_username', 'email': 'xyz@gmail.com', 'password': 'any_password'}
 
-        response = self.client.post(self.create_url , data, format='json')
-
-        # We want to make sure we have two users in the database..
-        self.assertEqual(User.objects.count(), 2)
-        # And that we're retuzrning a 201 created code.
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        # Additionally, we want to return the username and email upon successful creation.
-        self.assertEqual(response.data['username'], data['username'])
-        self.assertEqual(response.data['email'], data['email'])
-        self.assertFalse('password' in response.data)
-
-    def test_short_password(self):
-        data = {
-            'username': 'foobar',
-            'email': 'foobar@example.com',
-            'password': ' '
-        }
-        response = self.client.post(self.create_url, data, format='json')
         self.assertEqual(User.objects.count(), 1)
-        # And that we're returning a 201 created code.
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        # Additionally, we want to return the username and email upon successful creation.
-        self.assertEqual(len(response.data['password']),1)
 
-    def test_create_user_with_preexisting_email(self):
-        data = {
-            'username': 'testuser2',
-            'email': 'test@example.com',
-            'password': 'testuser'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
+    def test_email_require(self):
+        data = {'username': 'any_username', 'email': '', 'password': 'any_password'}
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 0)
+
+        data = {'username': 'any_username', 'password': 'any_password'}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_password_require(self):
+        data = {'username': 'any_username', 'email': 'xyz@gmail.com', 'password': ''}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 0)
+
+        data = {'username': 'any_username', 'email': 'xyz@gmail.com',}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_username_require(self):
+        data = {'username': '', 'email': 'xyz@gmail.com', 'password': 'password'}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 0)
+
+        data = {'email': 'xyz@gmail.com', 'password': 'password'}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_email_unique(self):
+        data = {'username': 'anyusername1', 'email': 'xyz1@gmail.com', 'password': 'password'}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['email']), 1)
 
-    def test_create_user_with_too_long_username(self):
-        data = {
-            'username': 'foo' * 50,
-            'email': 'foobarbaz@example.com',
-            'password': 'foobar'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['username']), 1)
-
-    def test_create_user_with_no_username(self):
-        data = {
-            'username': '',
-            'email': 'foobarbaz@example.com',
-            'password': 'foobar'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
+        data = {'username': 'anyusername2', 'email': 'xyz1@gmail.com', 'password': 'password'}
+        response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['username']), 1)
-
-    def test_create_user_with_preexisting_username(self):
-        data = {
-            'username': 'testuser',
-            'email': 'user@example.com',
-            'password': 'testuser'
-        }
-
-        response = self.client.post(self.create_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(len(response.data['username']), 1)
+        self.assertEqual(response.data["email"][0], "This field must be unique.")
 
 
-# class LoginTest(APITestCase):
-#     def setUp(self):
-#         # We want to go ahead and originally create a user.
-#         self.test_user = User.objects.create_user('testuser', 'test@example.com', 'testpassword')
-#         # URL for creating an account.
-#         self.create_url = reverse('login')
+class UserLoginTest(APITestCase):
+    url = reverse("login")
+
+    # def test_login_authentication(self):
+    #     user = User.objects.create(username='username',
+    #                                     password='password',
+    #                                     email='xyz@gmail.com'
+    #                                     )
+    #
+    #     # token = Token.objects.create(user=user)
+    #     user.is_active = True
+    #     Profile.objects.create(user=user)
+    #     # user.save()
+    #     data = {'username': 'username', 'password': 'password'}
+    #     response = self.client.post(self.url, data)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    #     self.assertEqual(response.data['token'], user.auth_token.key)
+
+    def test_login_user_failing(self):
+        user = User.objects.create(username='username',
+                                        password='password',
+                                        email='xyz@gmail.com')
+        token = Token.objects.create(user=user)
+        data = {'username': 'username', 'password': 'wrong_password'}
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual('token' in response.data, False)
+
+
+class UserProfileTest(APITestCase):
+    url = reverse("profile")
+
+    def test_Userprofile_default(self):
+        user = User.objects.create(username='username',
+                                   password='password',
+                                   email='xyz@gmail.com')
+        Profile.objects.create(user=user)
+        token = Token.objects.create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token {}'.format(token.key))
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], None)
+        self.assertEqual(response.data['city'], None)
+        self.assertEqual(len(response.data), 4)
+
+    def test_user_profile_after_edit(self):
+        user = User.objects.create(username='username',
+                                   password='password',
+                                   email='xyz@gmail.com')
+        Profile.objects.create(user=user)
+        token = Token.objects.create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token {}'.format(token.key))
+        data = {"name": "my_name"}
+        response = self.client.put(self.url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['name'], "my_name")
+        self.assertEqual(response.data['city'], None)
+        self.assertEqual(len(response.data), 3)
+
+
+class CheckAllCategoryTest(APITestCase):
+    url = reverse("category_list")
+
+    def test_check_all_category(self):
+        user = User.objects.create(username='username',
+                                      password='password',
+                                      email='xyz@gmail.com',
+                                      is_active=True)
+
+        token = Token.objects.create(user=user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token {}'.format(token.key))
+
+        obj1 = EasyInstruction.objects.get_or_create(instr="123")[0]
+        obj2 = MediumInstruction.objects.get_or_create(instr="123")[0]
+        obj3 = HardInstruction.objects.get_or_create(instr="123")[0]
+        Category.objects.create(category="science",
+                                )
+        response = self.client.get(self.url)
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["category"], "science")
+
+# class ChangePasswordTest(APITestCase):
+#     url = reverse("change-password")
 #
-#     def test_username(self):
-#         data = {
-#             'username': 'testuser',
-#             'password': 'testpassword'
-#         }
-#         response = self.client.post(self.create_url, data, format='json')
-#         self.assertEqual(response.status_code, status.HTTP_200_OK)
-#         self.assertEqual(User.objects.count(), 1)
-#         # self.assertEqual(len(response.data['username']), 1)
+#     def test_by_change_password(self):
+#         user = User.objects.create(username='username',
+#                                    password='password',
+#                                    email='xyz@gmail.com',
+#                                    is_active=True)
+#
+#         token = Token.objects.create(user=user)
+#         self.client.credentials(HTTP_AUTHORIZATION='Token {}'.format(token.key))
+#         self.client.force_login(user=user)
+#         data = {"old_password": "password", "new_password": "123pass123", "new_conf_pass": "123pass123"}
+#         response = self.client.post(self.url, data)
+#         print("res->", response.data)
+#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+#         self.assertEqual(response.data['message'], "password has been changed")
+#         self.assertEqual(len(response.data), 1)
+#
+#
+
 
