@@ -2,14 +2,16 @@ from channels.generic.websocket import JsonWebsocketConsumer
 import json
 from rest_framework import permissions, generics
 from rest_framework.authentication import TokenAuthentication
-from .models import CompeteQuiz, Category
+from .models import CompeteQuiz, Category, User, CompeteScore
 import time
 from asgiref.sync import async_to_sync
+from rest_framework.authtoken.models import Token
+
 
 current_time = time.time()
 x = 0
 method = 0
-
+tk = {}
 
 class CollectConsumer(JsonWebsocketConsumer):
 
@@ -26,31 +28,71 @@ class CollectConsumer(JsonWebsocketConsumer):
             self.close()
         self.accept()
 
-    def receive(self, **kwargs):
-        global x, method, current_time
+    def receive(self, text_data, **kwargs):
+        global x, method, current_time, tk
+        print("x->", x)
         x += 1
-        print("1-->", current_time, x)
+        print("x->", x)
+        # print("1-->", current_time, x)
         if x < 2:
             current_time = time.time()
         # if time.time()-current_time-20 > 0:
         #     method = 1
-
-        print("2-->", current_time, x, method)
+        # print("2-->", current_time, x, method)
+        a = current_time+10-time.time()
+        if a < 0:
+            method = 1
+            self.send(text_data=json.dumps({
+                "status": "no",
+                "message": "try after some time",
+            }))
+            x -= 1
+            self.close()
+            return 0
         time.sleep(current_time+10-time.time())
         cat = self.scope["url_route"]["kwargs"]["category"]
         cat_obj = Category.objects.get(category=cat)
         time_per_ques = cat_obj.compete_time
         total_ques = CompeteQuiz.objects.filter(category=cat_obj).count()
+        text_data_json = json.loads(text_data)
+        token = text_data_json['message']
+        score = text_data_json['result']
+        print(score)
+        per_score = (score / total_ques) * 100
+        print("score -->", per_score)
+        tk[token] = score
         for i in range(total_ques):
             d = self.get_question(cat, i)
             time.sleep(time_per_ques)
             self.send(text_data=json.dumps({
-                'message': d
-            }))
+                "status": "yes",
+                "question": d["question"],
+                "option1": d["option1"],
+                "option2": d["option2"],
+                "option3": d["option3"],
+                "option4": d["option4"],
+                "answer": d["answer"],
 
-    def disconnect(self, code):
+            }))
+        time.sleep(time_per_ques)
+        self.send(text_data=json.dumps({
+            "status": "done",
+        }))
+        # token_obj = Token.objects.get(token=token)
+        # print(token_obj)
+        # user = User.objects.get(key=token_obj)
+        # obj = CompeteScore.objects.get_or_create(user=user, category=cat_obj)
+        # print(user.username)
+        # if per_score>obj.compete_score:
+        #     obj.compete_score = per_score
+        # obj.save()
+        # tk.remove(token)
+        # self.disconnect()
+
+    def disconnect(self, code=None):
         global x, method
         x -= 1
+        print("x in dis", x)
         if x == 0:
             method = 0
         self.close()

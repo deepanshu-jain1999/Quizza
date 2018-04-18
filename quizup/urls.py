@@ -13,6 +13,9 @@ urlpatterns = [
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# urlpatterns += [
-#     url(r'^docs/', include_docs_urls(title='Quizza api docs'))
-# ]
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^debug_tool/', include(debug_toolbar.urls)),
+    ] + urlpatterns
+

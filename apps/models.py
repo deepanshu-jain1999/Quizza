@@ -173,8 +173,11 @@ class Score(models.Model):
     medium_score = models.FloatField(default=0.0)
     hard_score = models.FloatField(default=0.0)
 
-
     def __str__(self):
         return str(self.user.username)+ "_" + str(self.category.category)
 
 
+class CompeteScore(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    compete_score = models.FloatField(default=0.0)
