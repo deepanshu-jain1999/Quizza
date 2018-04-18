@@ -21,24 +21,25 @@ class CollectConsumer(JsonWebsocketConsumer):
         quiz = quiz.for_json()
         return quiz
 
+    def disconnect(self, code=None):
+        global x, method
+        x -= 1
+        print("x in dis", x)
+        if x == 0:
+            method = 0
+        self.close()
+
     def connect(self):
-        global method
-        global x
+        global method, x
         if method == 1:
-            self.close()
+            self.disconnect()
+        x += 1
         self.accept()
 
     def receive(self, text_data, **kwargs):
         global x, method, current_time, tk
-        print("x->", x)
-        x += 1
-        print("x->", x)
-        # print("1-->", current_time, x)
         if x < 2:
             current_time = time.time()
-        # if time.time()-current_time-20 > 0:
-        #     method = 1
-        # print("2-->", current_time, x, method)
         a = current_time+10-time.time()
         if a < 0:
             method = 1
@@ -46,19 +47,18 @@ class CollectConsumer(JsonWebsocketConsumer):
                 "status": "no",
                 "message": "try after some time",
             }))
-            x -= 1
-            self.close()
-            return 0
-        time.sleep(current_time+10-time.time())
+            return self.disconnect()
+
+        time.sleep(a)
         cat = self.scope["url_route"]["kwargs"]["category"]
         cat_obj = Category.objects.get(category=cat)
         time_per_ques = cat_obj.compete_time
         total_ques = CompeteQuiz.objects.filter(category=cat_obj).count()
-        text_data_json = json.loads(text_data)
-        token = text_data_json['message']
-        score = text_data_json['result']
-        per_score = (score / total_ques) * 100
-        tk[token] = score
+        # text_data_json = json.loads(text_data)
+        # token = text_data_json['message']
+        # score = text_data_json['result']
+        # per_score = (score / total_ques) * 100
+        # tk[token] = score
         for i in range(total_ques):
             d = self.get_question(cat, i)
             time.sleep(time_per_ques)
@@ -76,6 +76,44 @@ class CollectConsumer(JsonWebsocketConsumer):
         self.send(text_data=json.dumps({
             "status": "done",
         }))
+
+        self.disconnect()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         # token_obj = Token.objects.get(token=token)
         # print(token_obj)
         # user = User.objects.get(key=token_obj)
@@ -87,13 +125,7 @@ class CollectConsumer(JsonWebsocketConsumer):
         # tk.remove(token)
         # self.disconnect()
 
-    def disconnect(self, code=None):
-        global x, method
-        x -= 1
-        print("x in dis", x)
-        if x == 0:
-            method = 0
-        self.close()
+
 
     # def receive(self, text_data, **kwargs):
     #     # from_time = time.time()
@@ -135,5 +167,4 @@ class CollectConsumer(JsonWebsocketConsumer):
 
     # def player_question(self, event):
     #     self.send(text_data=event["text"])
-
 
