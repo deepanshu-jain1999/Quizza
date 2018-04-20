@@ -161,7 +161,7 @@ class ChangePassword(APIView):
             old_password = serializer.validated_data['old_password']
             new_password = serializer.validated_data['new_password']
             user = authenticate(username=self.request.user.username, password=old_password)
-            if user:
+            if user is not None:
                 user = self.request.user
                 user.set_password(new_password)
                 user.save()
