@@ -6,14 +6,30 @@ from .models import CompeteQuiz, Category, User, CompeteScore
 import time
 from asgiref.sync import async_to_sync
 from rest_framework.authtoken.models import Token
+import operator
 
 
 current_time = time.time()
 x = 0
 method = 0
-tk = {}
+dict_user_score = {}
+
 
 class CollectConsumer(JsonWebsocketConsumer):
+    def sort_result(self, dict_user_score):
+        sorted_dict = [(k, dict_user_score[k]) for k in sorted(dict_user_score, key=dict_user_score.get, reverse=True)]
+        print(sorted_dict)
+        d = {}
+        for c in sorted_dict:
+            d[c[0]] = c[1]
+        print(d)
+        return [d]
+
+    def token_to_user(self, token):
+        token_obj = Token.objects.get(key=token)
+        user = token_obj.user
+        print(user)
+        return user
 
     def get_question(self, cat, i):
         cat_obj = Category.objects.get(category=cat)
@@ -22,10 +38,12 @@ class CollectConsumer(JsonWebsocketConsumer):
         return quiz
 
     def disconnect(self, code=None):
-        global x, method
+        global x, method, dict_user_score
         x -= 1
         print("x in dis", x)
+        async_to_sync(self.channel_layer.group_discard)("player", self.channel_name)
         if x == 0:
+            dict_user_score = {}
             method = 0
         self.close()
 
@@ -36,32 +54,53 @@ class CollectConsumer(JsonWebsocketConsumer):
             self.disconnect()
         self.accept()
 
+    def player_message(self, event):
+        self.send(text_data=event["text"])
+
+
     def receive(self, text_data, **kwargs):
 
-        global x, method, current_time, tk
+        global x, method, current_time, dict_user_score
         text_data_json = json.loads(text_data)
         token = text_data_json['message']
+        user = self.token_to_user(token)
+        username = str(user.username)
         score = text_data_json['result']
+        dict_user_score[str(self.token_to_user(token).username)]= text_data_json['result']
         if score != -5:
-            print(score)
+            print("-->",username, score)
+            # dict_user_score[username] = score
+
+            # async_to_sync(self.channel_layer.group_send)(
+            #     "player",
+            #     {
+            #         "type": "player.message",
+            #         "text": json.dumps({"resArray":score, "result": username}),
+            #         # "score": score,
+            #         # "text": self.sort_result(dict_user_score),
+            #     },
+            # )
+            time.sleep(5)
             self.send(text_data=json.dumps({
                 "status": "your score",
-                "message": score,
+                "resArray": self.sort_result(dict_user_score),
             }))
-            return self.disconnect
+            # return self.disconnec
+            print("dict",dict_user_score)
+            return 0
 
         x += 1
         print(x)
         if x == 1:
             current_time = time.time()
-        a = current_time+20-time.time()
+        a = current_time+5-time.time()
         if a < 0:
             method = 1
             self.send(text_data=json.dumps({
                 "status": "no",
                 "message": "try after some time",
             }))
-            return self.disconnect()
+            # return self.disconnect()
 
         time.sleep(a)
         cat = self.scope["url_route"]["kwargs"]["category"]
@@ -69,10 +108,13 @@ class CollectConsumer(JsonWebsocketConsumer):
         time_per_ques = cat_obj.compete_time
         total_ques = CompeteQuiz.objects.filter(category=cat_obj).count()
         # text_data_json = json.loads(text_data)
-        # token = text_data_json['message']
+        token = text_data_json['message']
         # score = text_data_json['result']
         # per_score = (score / total_ques) * 100
         # tk[token] = score
+        async_to_sync(self.channel_layer.group_add)("player", self.channel_name)
+        dict_user_score[username] = 0
+
         for i in range(total_ques):
             d = self.get_question(cat, i)
             time.sleep(time_per_ques)
