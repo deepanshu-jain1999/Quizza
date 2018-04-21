@@ -93,7 +93,7 @@ class CollectConsumer(JsonWebsocketConsumer):
         print(x)
         if x == 1:
             current_time = time.time()
-        a = current_time+5-time.time()
+        a = current_time+4-time.time()
         if a < 0:
             method = 1
             self.send(text_data=json.dumps({
